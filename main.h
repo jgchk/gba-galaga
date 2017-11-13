@@ -37,8 +37,12 @@ void shootIfPossible(PLAYER *player, LEVEL *level);
 
 void destroyBullet(LEVEL *level, int index);
 
-int checkCollisions(LEVEL *level, PLAYER *player, int *scorePointer);
+int checkCollisions(LEVEL *level, int playerCol, int *scorePointer);
 
 int isCollision(int aRow, int aCol, int aWidth, int aHeight, int bRow, int bCol, int bWidth, int bHeight);
+
+void resetDiveAliens(LEVEL *level);
+
+void updateScore(int *scorePointer, int score);
 
 #endif //HW09_3_MAIN_H

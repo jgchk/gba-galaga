@@ -9,8 +9,14 @@
 enum GBAState {
     START,
     START_NODRAW,
+    RESET_GAME,
     DRAW_NEW_LEVEL,
-    LEVEL_LOOP
+    NEW_LEVEL_NODRAW,
+    LEVEL_LOOP,
+    GAME_OVER,
+    GAME_OVER_NODRAW,
+    WIN,
+    WIN_NODRAW
 };
 
 int main() {
@@ -22,21 +28,30 @@ int main() {
         keyPoll();
         waitForVblank();
 
-        drawRect(0, SCR_WIDTH - 20, 10, 10, BLACK);
-        drawInt(0, SCR_WIDTH - 20, game.player.pos, WHITE);
+//        drawRect(0, SCR_WIDTH - 20, 10, 10, BLACK);
+//        drawInt(0, SCR_WIDTH - 20, levels[0].aliens[0].diveCol, WHITE);
+
+        if (keyHit(BUTTON_SELECT)) {
+            state = START;
+        }
 
         switch (state) {
             case START:
                 drawStartScreen();
                 initGraphics();
-                initGame(&game);
-                initLevels(&levels[0]);
+//                game.currLevel = 0;
+//                game.player.lives = 3;
                 state = START_NODRAW;
                 break;
             case START_NODRAW:
                 if (keyHit(BUTTON_START)) {
-                    state = DRAW_NEW_LEVEL;
+                    state = RESET_GAME;
                 }
+                break;
+            case RESET_GAME:
+                initGame(&game);
+                initLevels(levels);
+                state = DRAW_NEW_LEVEL;
                 break;
             case DRAW_NEW_LEVEL:
                 drawBkg(0, 0, SCR_WIDTH, SCR_HEIGHT, space_bkg);
@@ -44,20 +59,59 @@ int main() {
                 drawInt(LEVELNUM_ROW, LEVELNUM_COL, game.currLevel + 1, WHITE);
                 drawLives(game.player.lives);
                 drawScore(game.player.score);
-                state = LEVEL_LOOP;
+                drawString(PRESS_START_ROW, PRESS_START_COL, "Press START!", WHITE);
+                state = NEW_LEVEL_NODRAW;
+                break;
+            case NEW_LEVEL_NODRAW:
+                if (keyHit(BUTTON_START)) {
+                    drawBkg(PRESS_START_ROW, PRESS_START_COL, 71, 7, space_bkg);
+                    state = LEVEL_LOOP;
+                }
                 break;
             case LEVEL_LOOP:;
                 LEVEL *level = &levels[game.currLevel];
                 if (level->numAliens == 0) {
                     game.currLevel++;
-                    state = DRAW_NEW_LEVEL;
+                    if (game.currLevel == NUM_LEVELS) {
+                        state = WIN;
+                    } else {
+                        state = DRAW_NEW_LEVEL;
+                    }
                     break;
                 }
                 moveAliens(level, &game.player);
                 movePlayer(&game.player);
                 moveBullets(level);
-                checkCollisions(level, NULL, &game.player.score);
+                int lostLife = checkCollisions(level, game.player.pos, &game.player.score);
+                if (lostLife) {
+                    game.player.lives--;
+                    resetDiveAliens(level);
+                    if (game.player.lives == 0) {
+                        state = GAME_OVER;
+                    } else {
+                        state = DRAW_NEW_LEVEL;
+                    }
+                    break;
+                }
                 shootIfPossible(&game.player, level);
+                break;
+            case GAME_OVER:
+                drawGameOverScreen();
+                state = GAME_OVER_NODRAW;
+                break;
+            case GAME_OVER_NODRAW:
+                if (keyHit(BUTTON_START)) {
+                    state = RESET_GAME;
+                }
+                break;
+            case WIN:
+                drawWinScreen(game.player.score);
+                state = WIN_NODRAW;
+                break;
+            case WIN_NODRAW:
+                if (keyHit(BUTTON_START)) {
+                    state = RESET_GAME;
+                }
                 break;
         }
     }
@@ -69,7 +123,10 @@ void initGame(GAME *game) {
 }
 
 void initLevels(LEVEL *levels) {
+    initLevelContents();
     levels[0] = lv0;
+    levels[1] = lv1;
+    levels[2] = lv2;
 }
 
 void moveAliens(LEVEL *level, PLAYER *player) {
@@ -82,11 +139,14 @@ void moveAliens(LEVEL *level, PLAYER *player) {
                 a->diveCol += getNextDiveCol(a);
                 if (a->diveRow == SCR_HEIGHT - STATUSBAR_HEIGHT - ALIEN_HEIGHT + 1) {
                     a->diveTarget = 0;
+                    a->diveCol = 0;
+                    a->diveRow = 0;
+                    updateScore(&player->score, DIVE_MISS_SCORE);
                 }
             } else {
                 drawBkg(getAlienIdleRow(a), getAlienIdleCol(a, level->animFrame), ALIEN_WIDTH, ALIEN_HEIGHT,
                         space_bkg);
-                int random = rand() % 1000;
+                int random = rand() % level->diveChance;
                 if (random == 0) {
                     a->diveTarget = player->pos;
                     a->diveRow = getAlienIdleRow(a);
@@ -167,6 +227,7 @@ void shootIfPossible(PLAYER *player, LEVEL *level) {
         drawImage(bullet.row, bullet.col, BULLET_0_WIDTH, BULLET_0_HEIGHT, bullet_0);
         level->bullets[level->numBullets++] = bullet;
         player->cooldown += BULLET_COOLDOWN;
+        updateScore(&player->score, SHOOT_SCORE);
     }
     if (player->cooldown > 0) {
         player->cooldown--;
@@ -195,16 +256,13 @@ void destroyAlien(LEVEL *level, int index) {
     level->numAliens--;
 }
 
-int checkCollisions(LEVEL *level, PLAYER *player, int *scorePointer) {
+int checkCollisions(LEVEL *level, int playerCol, int *scorePointer) {
     for (int a = 0; a < level->numAliens; a++) {
         ALIEN *alien = &level->aliens[a];
         if (alien->type == DIVE) {
-            int playerCollision = isCollision(PLAYER_ROW, player->pos, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, alien->diveRow,
+            int playerCollision = isCollision(PLAYER_ROW, playerCol, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, alien->diveRow,
                                               alien->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT);
             if (playerCollision) {
-                drawRect(0, 0, 2, 2, YELLOW);
-                player->lives--;
-                drawLives(player->lives);
                 destroyAlien(level, a);
                 return 1;
             }
@@ -227,8 +285,7 @@ int checkCollisions(LEVEL *level, PLAYER *player, int *scorePointer) {
             if (bulletCollision) {
                 destroyBullet(level, b);
                 destroyAlien(level, a);
-                *scorePointer += score;
-                drawScore(*scorePointer);
+                updateScore(scorePointer, score);
             }
         }
     }
@@ -237,8 +294,27 @@ int checkCollisions(LEVEL *level, PLAYER *player, int *scorePointer) {
 }
 
 int isCollision(int aRow, int aCol, int aWidth, int aHeight, int bRow, int bCol, int bWidth, int bHeight) {
-    if (aCol < bCol + bWidth - 1 && aCol + aWidth - 1 > bCol && aRow < bRow + bHeight - 1 && aRow + aHeight - 1 > bRow) {
+    if (aCol < bCol + bWidth - 1
+        && aCol + aWidth - 1 > bCol
+        && aRow < bRow + bHeight - 1
+        && aRow + aHeight - 1 > bRow) {
         return 1;
     }
     return 0;
+}
+
+void resetDiveAliens(LEVEL *level) {
+    for (int i = 0; i < level->numAliens; i++) {
+        level->aliens[i].diveTarget = 0;
+        level->aliens[i].diveRow = 0;
+        level->aliens[i].diveCol = 0;
+    }
+}
+
+void updateScore(int *scorePointer, int score) {
+    *scorePointer += score;
+    if (*scorePointer < 0) {
+        *scorePointer = 0;
+    }
+    drawScore(*scorePointer);
 }

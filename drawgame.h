@@ -19,11 +19,17 @@
 #define LEVELNUM_COL (STATUS_COL + 217)
 #define SCORE_ROW (STATUS_ROW + 5)
 #define SCORE_COL (STATUS_COL + 181)
+#define PRESS_START_ROW 110
+#define PRESS_START_COL 80
 
 void drawStartScreen();
 
 void drawLives(int lives);
 
 void drawScore(int score);
+
+void drawGameOverScreen();
+
+void drawWinScreen(int score);
 
 #endif //HW09_3_DRAWGAME_H

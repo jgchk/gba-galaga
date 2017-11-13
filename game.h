@@ -8,13 +8,15 @@
 #define NUM_ROWS 5
 #define NUM_COLS 10
 
-#define NUM_LEVELS 1
+#define NUM_LEVELS 3
 
 #define COOLDOWN_THRESHOLD 10
 #define BULLET_COOLDOWN 15
 
 #define IDLE_ALIEN_SCORE 100
 #define DIVE_ALIEN_SCORE 300
+#define DIVE_MISS_SCORE (-500)
+#define SHOOT_SCORE (-25)
 
 typedef struct Player {
     int pos;
@@ -56,6 +58,7 @@ typedef struct Level {
     int numAliens;
     BULLET *bullets;
     int numBullets;
+    int diveChance;
 } LEVEL;
 
 typedef struct Game {

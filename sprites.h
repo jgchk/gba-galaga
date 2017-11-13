@@ -1,7 +1,7 @@
 /*
  * Exported with nin10kit v1.7
- * Invocation command was nin10kit --mode=3 sprites sprites/bullet_0.bmp sprites/life.bmp sprites/pa_0.bmp sprites/player_0.bmp sprites/space_bkg.bmp sprites/startbkg.bmp sprites/statusbar.bmp sprites/da_0.bmp 
- * Time-stamp: Sunday 11/12/2017, 14:20:10
+ * Invocation command was nin10kit --mode=3 sprites sprites/bullet_0.bmp sprites/life.bmp sprites/pa_0.bmp sprites/player_0.bmp sprites/space_bkg.bmp sprites/startbkg.bmp sprites/statusbar.bmp sprites/da_0.bmp sprites/endbkg.bmp sprites/winbkg.bmp 
+ * Time-stamp: Monday 11/13/2017, 12:16:12
  * 
  * Image Information
  * -----------------
@@ -13,6 +13,8 @@
  * sprites/startbkg.bmp 240@160
  * sprites/statusbar.bmp 240@16
  * sprites/da_0.bmp 13@13
+ * sprites/endbkg.bmp 240@160
+ * sprites/winbkg.bmp 240@160
  * 
  * All bug reports / feature requests are to be filed here https://github.com/TricksterGuy/nin10kit/issues
  */
@@ -67,6 +69,18 @@ extern const unsigned short da_0[169];
 #define DA_0_LENGTH 169
 #define DA_0_WIDTH 13
 #define DA_0_HEIGHT 13
+
+extern const unsigned short endbkg[38400];
+#define ENDBKG_SIZE 76800
+#define ENDBKG_LENGTH 38400
+#define ENDBKG_WIDTH 240
+#define ENDBKG_HEIGHT 160
+
+extern const unsigned short winbkg[38400];
+#define WINBKG_SIZE 76800
+#define WINBKG_LENGTH 38400
+#define WINBKG_WIDTH 240
+#define WINBKG_HEIGHT 160
 
 #endif
 
