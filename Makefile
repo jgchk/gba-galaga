@@ -13,12 +13,12 @@ PROGNAME = JakeGBA
 # that will be compiled into your program. For example
 # if you have main.c and myLib.c then in the following
 # line you would put main.o and myLib.o
-OFILES = main.o
+OFILES = main.o graphics.o input.o levels.o font.o sprites.o drawgame.o
 
 # The header files you have created.
 # This is necessary to determine when to recompile for files.
 # This should be a space (SPACE!) separated list of .h files
-HFILES = main.h
+HFILES = main.h game.h graphics.h input.h levels.h font.c sprites.h drawgame.h
 
 ################################################################################
 # These are various settings used to make the GBA toolchain work
