@@ -20,6 +20,9 @@ BULLET lv2B[4];
 LEVEL lv2 = {.animFrame = 0, .animDir = 1, .aliens = lv2A, .numAliens = LENGTH(
         lv2A), .bullets = lv2B, .numBullets = 0, .diveChance = 100};
 
+/**
+ * Load alien position data into the levels
+ */
 void initLevelContents() {
     for (int i = 6; i <= 9; i++) {
         lv0A[i - 6] = (ALIEN) {0, i, DIVE, 0, 0, 0};

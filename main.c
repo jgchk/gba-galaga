@@ -137,56 +137,60 @@ void initLevels(LEVEL *levels) {
  * @param player pointer to the PLAYER struct
  */
 void moveAliens(LEVEL *level, PLAYER *player) {
-    for (int i = 0; i < level->numAliens; i++) {
+    for (int i = 0; i < level->numAliens; i++) { // Loop through all aliens in the level
         ALIEN *a = &level->aliens[i];
-        if (a->type == DIVE) {
-            if (a->diveTarget) {
-                drawBkg(a->diveRow, a->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT, space_bkg);
-                a->diveRow++;
-                a->diveCol += getNextDiveCol(a);
-                if (a->diveRow == SCR_HEIGHT - STATUSBAR_HEIGHT - ALIEN_HEIGHT + 1) {
-                    a->diveTarget = 0;
+        if (a->type == DIVE) { // If the current alien is a DIVE type
+            if (a->diveTarget) { // If the diving alien is currently diving
+                drawBkg(a->diveRow, a->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT, space_bkg); // Erase the last alien position
+                a->diveRow++; // Move the alien down
+                a->diveCol += getNextDiveCol(a); // Move the alien towards the player
+                if (a->diveRow == SCR_HEIGHT - STATUSBAR_HEIGHT - ALIEN_HEIGHT + 1) { // If the alien hits bottom screen
+                    a->diveTarget = 0; // Reset the alien to non-diving state
                     a->diveCol = 0;
                     a->diveRow = 0;
-                    updateScore(&player->score, DIVE_MISS_SCORE);
+                    updateScore(&player->score, DIVE_MISS_SCORE); // Penalize the player for letting alien by
                 }
-            } else {
+            } else { // If the diving alien is not currently diving
                 drawBkg(getAlienIdleRow(a), getAlienIdleCol(a, level->animFrame), ALIEN_WIDTH, ALIEN_HEIGHT,
-                        space_bkg);
-                int random = rand() % level->diveChance;
-                if (random == 0) {
-                    a->diveTarget = player->pos;
+                        space_bkg); // Erase the last alien position
+                int random = rand() % level->diveChance; // Randomly decide whether to make the alien dive or not
+                if (random == 0) { // If we decidie to make the alien dive
+                    a->diveTarget = player->pos; // Make the alien move towards the player
                     a->diveRow = getAlienIdleRow(a);
                     a->diveCol = getAlienIdleCol(a, level->animFrame);
                 }
             }
-        } else {
+        } else { // If the current alien is not DIVE type
             drawBkg(getAlienIdleRow(a), getAlienIdleCol(a, level->animFrame), ALIEN_WIDTH, ALIEN_HEIGHT,
-                    space_bkg);
+                    space_bkg); // Erase the current alien position
         }
     }
 
+    // Increment/decrement the level idle animation frame depending on movement direction
     if (level->animDir == 1) {
         level->animFrame++;
     } else {
         level->animFrame--;
     }
 
+    // Reverse the idle animation direction if necessary
     if (level->animFrame == IDLE_ANIM_FRAMES * 11) {
         level->animDir = -1;
     } else if (level->animFrame == 3) {
         level->animDir = 1;
     }
 
-    for (int i = 0; i < level->numAliens; i++) {
+    for (int i = 0; i < level->numAliens; i++) { // Loop through all aliens in the level again
         ALIEN *a = &level->aliens[i];
-        if (a->type == DIVE) {
-            if (a->diveTarget) {
-                drawImage(a->diveRow, a->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT, da_0);
-            } else {
+        if (a->type == DIVE) { // If the current alien is a DIVE type
+            if (a->diveTarget) { // If the alien is currently diving
+                drawImage(a->diveRow, a->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT, da_0); // Use the dive position to draw
+            } else { // If not currently diving
+                // Use the idle position to draw
                 drawImage(getAlienIdleRow(a), getAlienIdleCol(a, level->animFrame), ALIEN_WIDTH, ALIEN_HEIGHT, da_0);
             }
-        } else {
+        } else { // If the current alien is not a DIVE type
+            // Use the idle position to draw
             drawImage(getAlienIdleRow(a), getAlienIdleCol(a, level->animFrame), ALIEN_WIDTH, ALIEN_HEIGHT, pa_0);
         }
     }
@@ -229,14 +233,14 @@ int getNextDiveCol(ALIEN *a) {
  * @param player pointer to the PLAYER struct
  */
 void movePlayer(PLAYER *player) {
-    drawBkg(PLAYER_ROW, player->pos, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, space_bkg);
-    if (KEY_DOWN(BUTTON_LEFT) && player->pos > 1) {
-        player->pos--;
+    drawBkg(PLAYER_ROW, player->pos, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, space_bkg); // Erase the previous player position
+    if (KEY_DOWN(BUTTON_LEFT) && player->pos > 1) { // If the left button is pressed and the player has room to move
+        player->pos--; // Decrement position
     }
-    if (KEY_DOWN(BUTTON_RIGHT) && player->pos < (SCR_WIDTH - PLAYER_0_WIDTH)) {
-        player->pos++;
+    if (KEY_DOWN(BUTTON_RIGHT) && player->pos < (SCR_WIDTH - PLAYER_0_WIDTH)) { // If right is pressed and room to move
+        player->pos++; // Increment position
     }
-    drawImage(PLAYER_ROW, player->pos, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, player_0);
+    drawImage(PLAYER_ROW, player->pos, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, player_0); // Draw the new player position
 }
 
 /**
@@ -245,14 +249,14 @@ void movePlayer(PLAYER *player) {
  * @param level pointer to the current LEVEL
  */
 void moveBullets(LEVEL *level) {
-    for (int i = 0; i < level->numBullets; i++) {
+    for (int i = 0; i < level->numBullets; i++) { // Loop through all bullets in the level
         BULLET *bullet = &level->bullets[i];
-        drawBkg(bullet->row, bullet->col, BULLET_0_WIDTH, BULLET_0_HEIGHT, space_bkg);
-        bullet->row -= 4;
-        if (bullet->row < 0) {
-            destroyBullet(level, i);
-        } else {
-            drawImage(bullet->row, bullet->col, BULLET_0_WIDTH, BULLET_0_HEIGHT, bullet_0);
+        drawBkg(bullet->row, bullet->col, BULLET_0_WIDTH, BULLET_0_HEIGHT, space_bkg); // Erase the previous bullet pos
+        bullet->row -= 4; // Move the bullet up 4 pixels
+        if (bullet->row < 0) { // If the bullet is at the top of the screen
+            destroyBullet(level, i); // Remove the bullet
+        } else { // Otherwise
+            drawImage(bullet->row, bullet->col, BULLET_0_WIDTH, BULLET_0_HEIGHT, bullet_0); // Draw the new bullet pos
         }
     }
 }
@@ -265,14 +269,14 @@ void moveBullets(LEVEL *level) {
  * @param level pointer to the current LEVEL
  */
 void shootIfPossible(PLAYER *player, LEVEL *level) {
-    if (keyHit(BUTTON_A) && player->cooldown < COOLDOWN_THRESHOLD) {
+    if (keyHit(BUTTON_A) && player->cooldown < COOLDOWN_THRESHOLD) { // If the player can shoot and hits A
         BULLET bullet = {.row = PLAYER_ROW - PLAYER_0_HEIGHT + 7, .col = player->pos + PLAYER_0_WIDTH / 2 - 1};
-        drawImage(bullet.row, bullet.col, BULLET_0_WIDTH, BULLET_0_HEIGHT, bullet_0);
-        level->bullets[level->numBullets++] = bullet;
-        player->cooldown += BULLET_COOLDOWN;
-        updateScore(&player->score, SHOOT_SCORE);
+        drawImage(bullet.row, bullet.col, BULLET_0_WIDTH, BULLET_0_HEIGHT, bullet_0); // Draw a new bullet
+        level->bullets[level->numBullets++] = bullet; // Add a new bullet to the LEVEL bullet array
+        player->cooldown += BULLET_COOLDOWN; // Add cooldown so you can't shoot too fast
+        updateScore(&player->score, SHOOT_SCORE); // Remove the score cost for shooting a bullet
     }
-    if (player->cooldown > 0) {
+    if (player->cooldown > 0) { // Decrement the cooldown (min = 0)
         player->cooldown--;
     }
 }
@@ -285,11 +289,11 @@ void shootIfPossible(PLAYER *player, LEVEL *level) {
  */
 void destroyBullet(LEVEL *level, int index) {
     BULLET *b = &level->bullets[index];
-    drawBkg(b->row, b->col, BULLET_0_WIDTH, BULLET_0_HEIGHT, space_bkg);
-    for (int i = index; i < level->numBullets - 1; i++) {
+    drawBkg(b->row, b->col, BULLET_0_WIDTH, BULLET_0_HEIGHT, space_bkg); // Erase the bullet position
+    for (int i = index; i < level->numBullets - 1; i++) { // Move the array left, overwriting the removed bullet index
         level->bullets[i] = level->bullets[i + 1];
     }
-    level->numBullets--;
+    level->numBullets--; // Decrement the LEVEL bullet counter
 }
 
 /**
@@ -300,15 +304,16 @@ void destroyBullet(LEVEL *level, int index) {
  */
 void destroyAlien(LEVEL *level, int index) {
     ALIEN *a = &level->aliens[index];
-    if (a->diveTarget) {
-        drawBkg(a->diveRow, a->diveCol, PA_0_WIDTH, PA_0_HEIGHT, space_bkg);
-    } else {
+    if (a->diveTarget) { // If the given alien is diving
+        drawBkg(a->diveRow, a->diveCol, PA_0_WIDTH, PA_0_HEIGHT, space_bkg); // Erase alien using dive position
+    } else { // Otherwise
+        // Erase alien using idle position
         drawBkg(getAlienIdleRow(a), getAlienIdleCol(a, level->animFrame), PA_0_WIDTH, PA_0_HEIGHT, space_bkg);
     }
-    for (int i = index; i < level->numAliens - 1; i++) {
+    for (int i = index; i < level->numAliens - 1; i++) { // Move the array left, overwriting the removed alien index
         level->aliens[i] = level->aliens[i + 1];
     }
-    level->numAliens--;
+    level->numAliens--; // Decrement the LEVEL alien counter
 }
 
 /**
@@ -320,40 +325,41 @@ void destroyAlien(LEVEL *level, int index) {
  * @return 1 if the PLAYER collided with an ALIEN, 0 if not
  */
 int checkCollisions(LEVEL *level, int playerCol, int *scorePointer) {
-    for (int a = 0; a < level->numAliens; a++) {
+    for (int a = 0; a < level->numAliens; a++) { // Loop through all aliens in the level
         ALIEN *alien = &level->aliens[a];
-        if (alien->type == DIVE) {
+        if (alien->type == DIVE) { // If the current alien is a dive type, check if it is colliding with the player
             int playerCollision = isCollision(PLAYER_ROW, playerCol, PLAYER_0_WIDTH, PLAYER_0_HEIGHT, alien->diveRow,
                                               alien->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT);
-            if (playerCollision) {
-                destroyAlien(level, a);
-                return 1;
+            if (playerCollision) { // If colliding with the player
+                destroyAlien(level, a); // Remove the alien from the level
+                return 1; // Return 1, saying that the player collided with an alien
             }
         }
 
-        for (int b = 0; b < level->numBullets; b++) {
+        for (int b = 0; b < level->numBullets; b++) { // Loop through all bullets in the level
             BULLET *bullet = &level->bullets[b];
             int bulletCollision;
             int score;
-            if (alien->diveTarget) {
+            if (alien->diveTarget) { // If the current alien is a dive type
+                // Check collision using dive position
                 bulletCollision = isCollision(alien->diveRow, alien->diveCol, ALIEN_WIDTH, ALIEN_HEIGHT, bullet->row,
                                               bullet->col, BULLET_0_WIDTH, BULLET_0_HEIGHT);
-                score = DIVE_ALIEN_SCORE;
+                score = DIVE_ALIEN_SCORE; // Use dive score reward
             } else {
                 bulletCollision = isCollision(getAlienIdleRow(alien), getAlienIdleCol(alien, level->animFrame),
                                               ALIEN_WIDTH, ALIEN_HEIGHT, bullet->row, bullet->col, BULLET_0_WIDTH,
-                                              BULLET_0_HEIGHT);
-                score = IDLE_ALIEN_SCORE;
+                                              BULLET_0_HEIGHT); // Check collision using idle position
+                score = IDLE_ALIEN_SCORE; // Use idle score reward
             }
-            if (bulletCollision) {
-                destroyBullet(level, b);
-                destroyAlien(level, a);
-                updateScore(scorePointer, score);
+            if (bulletCollision) { // If the bullet-alien collision happened
+                destroyBullet(level, b); // Remove the bullet
+                destroyAlien(level, a); // Remove the alien
+                updateScore(scorePointer, score); // Increase the score
             }
         }
     }
 
-    return 0;
+    return 0; // Return 0 if no player-alien collision happened
 }
 
 /**
