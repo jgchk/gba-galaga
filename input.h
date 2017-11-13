@@ -9,7 +9,7 @@
 
 #define BUTTONS *(volatile u32 *) 0x4000130
 #define KEYS (~(BUTTONS) & 0x03FF)
-#define KEY_DOWN(key) (~(BUTTONS) & key)
+#define KEY_DOWN(key) (~(BUTTONS) & (key))
 #define BUTTON_A        (1<<0)
 #define BUTTON_B        (1<<1)
 #define BUTTON_SELECT   (1<<2)

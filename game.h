@@ -51,7 +51,6 @@ typedef struct Bullet {
 } BULLET;
 
 typedef struct Level {
-    int levelNum;
     int animFrame;
     int animDir;
     ALIEN *aliens;

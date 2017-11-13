@@ -7,17 +7,17 @@
 
 ALIEN lv0A[8];
 BULLET lv0B[4];
-LEVEL lv0 = {.levelNum = 0, .animFrame = 0, .animDir = 1, .aliens = lv0A, .numAliens = LENGTH(
+LEVEL lv0 = {.animFrame = 0, .animDir = 1, .aliens = lv0A, .numAliens = LENGTH(
         lv0A), .bullets = lv0B, .numBullets = 0, .diveChance = 1000};
 
 ALIEN lv1A[8];
 BULLET lv1B[4];
-LEVEL lv1 = {.levelNum = 1, .animFrame = 0, .animDir = 1, .aliens = lv1A, .numAliens = LENGTH(
+LEVEL lv1 = {.animFrame = 0, .animDir = 1, .aliens = lv1A, .numAliens = LENGTH(
         lv1A), .bullets = lv1B, .numBullets = 0, .diveChance = 500};
 
 ALIEN lv2A[8];
 BULLET lv2B[4];
-LEVEL lv2 = {.levelNum = 2, .animFrame = 0, .animDir = 1, .aliens = lv2A, .numAliens = LENGTH(
+LEVEL lv2 = {.animFrame = 0, .animDir = 1, .aliens = lv2A, .numAliens = LENGTH(
         lv2A), .bullets = lv2B, .numBullets = 0, .diveChance = 100};
 
 void initLevelContents() {
