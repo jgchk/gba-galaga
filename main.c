@@ -17,6 +17,7 @@ enum GBAState {
     WIN,                // Draw the win screen
     END_SCREEN_NODRAW   // Wait for the player to hit START to restart
 };
+unsigned int randSeed = 0;
 
 int main() {
     GAME game; // Keep track of game stats
@@ -35,10 +36,13 @@ int main() {
             case START:
                 drawStartScreen();
                 initGraphics(); // Set up Mode 3 and BG2
+                randSeed = 0;
                 state = START_NODRAW;
                 break;
             case START_NODRAW:
+                randSeed++;
                 if (keyHit(BUTTON_START)) {
+                    srand(randSeed);
                     state = RESET_GAME;
                 }
                 break;
